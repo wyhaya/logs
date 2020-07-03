@@ -1,0 +1,14 @@
+[package]
+name = "logs"
+version = "0.0.1"
+authors = ["wyhaya <wyhaya@gmail.com>"]
+edition = "2018"
+
+[features]
+debug = []
+trace = []
+info = []
+warn = []
+error = []
+
+[dependencies]
