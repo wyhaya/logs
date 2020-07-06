@@ -31,14 +31,38 @@
 //! [2020-07-06 15:56:08] [ERROR] This is a error log
 //! ```
 
+#[cfg(feature = "time")]
+pub use time;
+
 use cfg_if::cfg_if;
+
+cfg_if! {
+    if #[cfg(feature = "time")] {
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! _time {
+            ($print:expr) => {
+                if $print {
+                    print!("[{}] ", $crate::time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+                }else {
+                    eprint!("[{}] ", $crate::time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+                }
+            };
+        }
+    } else {
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! _time {
+            ($_:expr) => {};
+        }
+    }
+}
 
 #[doc(hidden)]
 #[macro_export]
 macro_rules! _print {
     ($($arg:tt)*) => {
-        #[cfg(feature = "time")]
-        print!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        $crate::_time!(true);
         print!($($arg)*);
     };
 }
@@ -47,8 +71,7 @@ macro_rules! _print {
 #[macro_export]
 macro_rules! _println {
     ($($arg:tt)*) => {
-        #[cfg(feature = "time")]
-        print!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        $crate::_time!(true);
         println!($($arg)*);
     };
 }
@@ -57,8 +80,7 @@ macro_rules! _println {
 #[macro_export]
 macro_rules! _eprint {
     ($($arg:tt)*) => {
-        #[cfg(feature = "time")]
-        eprint!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        $crate::_time!(false);
         eprint!($($arg)*);
     };
 }
@@ -108,11 +130,11 @@ cfg_if! {
     if #[cfg(any(debug_assertions, feature = "info"))] {
         #[macro_export]
         macro_rules! info {
-    ($($arg:tt)*) => {
-        $crate::_print!("\x1B[32m{}\x1B[0m ", "[INFO ]");
-        println!($($arg)*);
-    };
-}
+            ($($arg:tt)*) => {
+                $crate::_print!("\x1B[32m{}\x1B[0m ", "[INFO ]");
+                println!($($arg)*);
+            };
+        }
     }else {
         #[macro_export]
         macro_rules! info {
@@ -124,12 +146,12 @@ cfg_if! {
 cfg_if! {
     if #[cfg(any(debug_assertions, feature = "warn"))] {
         #[macro_export]
-macro_rules! warn {
-    ($($arg:tt)*) => {
-        $crate::_print!("\x1B[4;33m{}\x1B[0m ", "[WARN ]");
-        println!($($arg)*);
-    };
-}
+        macro_rules! warn {
+            ($($arg:tt)*) => {
+                $crate::_print!("\x1B[4;33m{}\x1B[0m ", "[WARN ]");
+                println!($($arg)*);
+            };
+        }
     }else {
         #[macro_export]
         macro_rules! warn {
@@ -141,12 +163,12 @@ macro_rules! warn {
 cfg_if! {
     if #[cfg(any(debug_assertions, feature = "error"))] {
         #[macro_export]
-macro_rules! error {
-    ($($arg:tt)*) => {
-        $crate::_eprint!("\x1B[1;31m{}\x1B[0m ", "[ERROR]");
-        eprintln!($($arg)*);
-    };
-}
+        macro_rules! error {
+            ($($arg:tt)*) => {
+                $crate::_eprint!("\x1B[1;31m{}\x1B[0m ", "[ERROR]");
+                eprintln!($($arg)*);
+            };
+        }
     }else {
         #[macro_export]
         macro_rules! error {
