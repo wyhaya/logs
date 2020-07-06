@@ -9,58 +9,148 @@
 //!      error!("This is a error log");
 //!  }
 //!  ```
+//! ## Features
+//!
+//! By default, these logs will not be displayed in `--release` mode, if you need to open please add the logs features.
+//!
+//! ```no-run
+//! [dependencies]
+//! logs = { version = "*", features = ["warn", "error" ...] }
+//! ```
+//!
+//! By default, the log does not include the recording time, to display please add logs features.
+//!
+//! ```no-run
+//! [dependencies]
+//! logs = { version = "*", features = ["time"] }
+//! ```
+//!
+//! ```no-run
+//! ...
+//! [2020-07-06 15:56:08] [WARN ] This is a warn log
+//! [2020-07-06 15:56:08] [ERROR] This is a error log
+//! ```
 
+use cfg_if::cfg_if;
+
+#[doc(hidden)]
 #[macro_export]
-macro_rules! debug {
+macro_rules! _print {
     ($($arg:tt)*) => {
-        #[cfg(any(debug_assertions, feature = "debug"))]
-        {
-            println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
-            println!($($arg)*);
-        }
+        #[cfg(feature = "time")]
+        print!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        print!($($arg)*);
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
-macro_rules! trace {
+macro_rules! _println {
     ($($arg:tt)*) => {
-        #[cfg(any(debug_assertions, feature = "trace"))]
-        {
-            print!("\x1B[2;3m{}\x1B[0m ", "[TRACE]");
-            println!($($arg)*);
-        }
+        #[cfg(feature = "time")]
+        print!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        println!($($arg)*);
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
-macro_rules! info {
+macro_rules! _eprint {
     ($($arg:tt)*) => {
-       #[cfg(any(debug_assertions, feature = "info"))]
-        {
-            print!("\x1B[32m{}\x1B[0m ", "[INFO]");
-            println!($($arg)*);
-        }
+        #[cfg(feature = "time")]
+        eprint!("[{}] ", time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
+        eprint!($($arg)*);
     };
 }
 
-#[macro_export]
+cfg_if! {
+    if #[cfg(any(debug_assertions, feature = "debug"))] {
+        #[macro_export]
+        macro_rules! debug {
+            () => {
+                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
+            };
+            ($val:expr) => {
+                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
+                println!("{:#?}", $val);
+            };
+            ($($arg:tt)*) => {
+                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
+                println!($($arg)*);
+             };
+        }
+    } else {
+        #[macro_export]
+        macro_rules! debug {
+            ($($arg:tt)*) => {};
+        }
+    }
+}
+
+cfg_if! {
+    if #[cfg(any(debug_assertions, feature = "trace"))] {
+        #[macro_export]
+        macro_rules! trace {
+            ($($arg:tt)*) => {
+                $crate::_print!("\x1B[2;3m{}\x1B[0m ", "[TRACE]");
+                println!($($arg)*);
+            };
+        }
+    }else {
+        #[macro_export]
+        macro_rules! trace {
+            ($($arg:tt)*) => { };
+        }
+    }
+}
+
+cfg_if! {
+    if #[cfg(any(debug_assertions, feature = "info"))] {
+        #[macro_export]
+        macro_rules! info {
+    ($($arg:tt)*) => {
+        $crate::_print!("\x1B[32m{}\x1B[0m ", "[INFO ]");
+        println!($($arg)*);
+    };
+}
+    }else {
+        #[macro_export]
+        macro_rules! info {
+            ($($arg:tt)*) => { };
+        }
+    }
+}
+
+cfg_if! {
+    if #[cfg(any(debug_assertions, feature = "warn"))] {
+        #[macro_export]
 macro_rules! warn {
     ($($arg:tt)*) => {
-       #[cfg(any(debug_assertions, feature = "warn"))]
-        {
-            print!("\x1B[4;33m{}\x1B[0m ", "[WARN]");
-            println!($($arg)*);
-        }
+        $crate::_print!("\x1B[4;33m{}\x1B[0m ", "[WARN ]");
+        println!($($arg)*);
     };
 }
+    }else {
+        #[macro_export]
+        macro_rules! warn {
+            ($($arg:tt)*) => { };
+        }
+    }
+}
 
-#[macro_export]
+cfg_if! {
+    if #[cfg(any(debug_assertions, feature = "error"))] {
+        #[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {
-        #[cfg(any(debug_assertions, feature = "error"))]
-        {
-            eprint!("\x1B[1;31m{}\x1B[0m ", "[ERROR]");
-            eprintln!($($arg)*);
-        }
+        $crate::_eprint!("\x1B[1;31m{}\x1B[0m ", "[ERROR]");
+        eprintln!($($arg)*);
     };
+}
+    }else {
+        #[macro_export]
+        macro_rules! error {
+            ($($arg:tt)*) => { };
+        }
+    }
 }

@@ -3,6 +3,17 @@ name = "logs"
 version = "0.0.1"
 authors = ["wyhaya <wyhaya@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "A simple terminal logger"
+readme = "README.md"
+homepage = "https://github.com/wyhaya/logs"
+repository = "https://github.com/wyhaya/logs.git"
+
+keywords = [
+    "log",
+    "terminal",
+    "logger"
+]
 
 [features]
 debug = []
@@ -12,3 +23,5 @@ warn = []
 error = []
 
 [dependencies]
+cfg-if = { version = "0.1.10" }
+time = { version = "0.1.43", optional = true, default-features = false }
