@@ -17,71 +17,49 @@
 //! [dependencies]
 //! logs = { version = "*", features = ["warn", "error" ...] }
 //! ```
-//!
-//! By default, the log does not include the recording time, to display please add logs features.
-//!
-//! ```no-run
-//! [dependencies]
-//! logs = { version = "*", features = ["time"] }
-//! ```
-//!
 //! ```no-run
 //! ...
 //! [2020-07-06 15:56:08] [WARN ] This is a warn log
 //! [2020-07-06 15:56:08] [ERROR] This is a error log
 //! ```
-
-#[cfg(feature = "time")]
-pub use time;
+//! Change datetime format
+//! ```no-run
+//! logs::date_format("%c");
+//! ```
+//! ```no-run
+//! [Fri Nov 27 15:56:08 2020] [ERROR] This is a error log
+//! ```
 
 use cfg_if::cfg_if;
+pub use time;
 
-cfg_if! {
-    if #[cfg(feature = "time")] {
-        #[doc(hidden)]
-        #[macro_export]
-        macro_rules! _time {
-            ($print:expr) => {
-                if $print {
-                    print!("[{}] ", $crate::time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
-                }else {
-                    eprint!("[{}] ", $crate::time::now().strftime("%Y-%m-%d %H:%M:%S").unwrap());
-                }
-            };
-        }
-    } else {
-        #[doc(hidden)]
-        #[macro_export]
-        macro_rules! _time {
-            ($_:expr) => {};
-        }
-    }
+// Default date format: 0000-00-00 00:00:00
+#[doc(hidden)]
+pub static mut DATE_FORMAT: &str = "%F %T";
+
+/// Change date and time format
+/// 
+/// [time docs](https://docs.rs/time/0.2.23/time/?search=#formatting)
+/// ```no-run
+/// date_format("%c");
+/// [Fri Nov 27 13:51:59 2020] [ERROR] This is a error log
+/// ```
+pub fn date_format(s: &str) -> bool {
+    time::now()
+        .strftime(&s)
+        .map(|_| unsafe {
+            DATE_FORMAT = Box::leak(s.to_string().into_boxed_str());
+        })
+        .is_ok()
 }
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! _print {
-    ($($arg:tt)*) => {
-        $crate::_time!(true);
-        print!($($arg)*);
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! _println {
-    ($($arg:tt)*) => {
-        $crate::_time!(true);
-        println!($($arg)*);
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! _eprint {
-    ($($arg:tt)*) => {
-        $crate::_time!(false);
-        eprint!($($arg)*);
+macro_rules! _time {
+    () => {
+        $crate::time::now()
+            .strftime(unsafe { $crate::DATE_FORMAT })
+            .unwrap()
     };
 }
 
@@ -90,21 +68,20 @@ cfg_if! {
         #[macro_export]
         macro_rules! debug {
             () => {
-                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
+                println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]", $crate::_time!(), "DEBUG", file!(), line!());
             };
             ($val:expr) => {
-                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
-                println!("{:#?}", $val);
+                println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]\n{:#?}", $crate::_time!(), "DEBUG", file!(), line!(), $val);
             };
-            ($($arg:tt)*) => {
-                $crate::_println!("\x1B[36m{}\x1B[0m [{}:{}]", "[DEBUG]", file!(), line!());
-                println!($($arg)*);
-             };
+            ($($arg:expr), *) => {
+                println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]", $crate::_time!(), "DEBUG", file!(), line!());
+                $(println!("{:#?}", $arg);)*
+            };
         }
     } else {
         #[macro_export]
         macro_rules! debug {
-            ($($arg:tt)*) => {};
+            ($($arg:tt)*) => { };
         }
     }
 }
@@ -114,7 +91,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! trace {
             ($($arg:tt)*) => {
-                $crate::_print!("\x1B[2;3m{}\x1B[0m ", "[TRACE]");
+                print!("[{}] \x1B[2;3m[{}]\x1B[0m ", $crate::_time!(), "TRACE");
                 println!($($arg)*);
             };
         }
@@ -131,7 +108,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! info {
             ($($arg:tt)*) => {
-                $crate::_print!("\x1B[32m{}\x1B[0m ", "[INFO ]");
+                print!("[{}] \x1B[32m[{}]\x1B[0m ", $crate::_time!(), "INFO ");
                 println!($($arg)*);
             };
         }
@@ -148,7 +125,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! warn {
             ($($arg:tt)*) => {
-                $crate::_print!("\x1B[4;33m{}\x1B[0m ", "[WARN ]");
+                print!("[{}] \x1B[4;33m[{}]\x1B[0m ", $crate::_time!(), "WARN ");
                 println!($($arg)*);
             };
         }
@@ -165,7 +142,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! error {
             ($($arg:tt)*) => {
-                $crate::_eprint!("\x1B[1;31m{}\x1B[0m ", "[ERROR]");
+                eprint!("[{}] \x1B[1;31m[{}]\x1B[0m ", $crate::_time!(), "ERROR");
                 eprintln!($($arg)*);
             };
         }

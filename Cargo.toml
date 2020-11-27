@@ -1,6 +1,6 @@
 [package]
 name = "logs"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["wyhaya <wyhaya@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -23,5 +23,5 @@ warn = []
 error = []
 
 [dependencies]
-cfg-if = { version = "0.1.10" }
-time = { version = "0.1.43", optional = true, default-features = false }
+cfg-if = "1.0.0"
+time = "0.1.44"

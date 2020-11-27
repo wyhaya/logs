@@ -35,22 +35,25 @@ fn main() {
 
 By default, these logs will not be displayed in `--release` mode, if you need to open please add the logs features.
 
-```
+```toml
 [dependencies]
 logs = { version = "*", features = ["warn", "error" ...] }
-```
-
-By default, the log does not include the recording time, to display please add logs features.
-
-```
-[dependencies]
-logs = { version = "*", features = ["time"] }
 ```
 
 ```
 ...
 [2020-07-06 15:56:08] [WARN ] This is a warn log
 [2020-07-06 15:56:08] [ERROR] This is a error log
+```
+
+Change datetime format
+
+```rust
+logs::date_format("%c");
+```
+
+```
+[Fri Nov 27 15:56:08 2020] [ERROR] This is a error log
 ```
 
 ---
