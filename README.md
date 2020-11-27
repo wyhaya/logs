@@ -35,7 +35,7 @@ fn main() {
 
 By default, these logs will not be displayed in `--release` mode, if you need to open please add the logs features.
 
-```toml
+```
 [dependencies]
 logs = { version = "*", features = ["warn", "error" ...] }
 ```
