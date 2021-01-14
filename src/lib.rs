@@ -38,7 +38,7 @@ pub use time;
 pub static mut DATE_FORMAT: &str = "%F %T";
 
 /// Change date and time format
-/// 
+///
 /// [time docs](https://docs.rs/time/0.2.23/time/?search=#formatting)
 /// ```no-run
 /// date_format("%c");
@@ -74,8 +74,11 @@ cfg_if! {
                 println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]\n{:#?}", $crate::_time!(), "DEBUG", file!(), line!(), $val);
             };
             ($($arg:expr), *) => {
-                println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]", $crate::_time!(), "DEBUG", file!(), line!());
-                $(println!("{:#?}", $arg);)*
+                print!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]\n{}", $crate::_time!(), "DEBUG", file!(), line!(), {
+                    let mut content = String::new();
+                    $(content += &format!("{:#?}\n", $arg);)*
+                    content
+                });
             };
         }
     } else {
@@ -91,8 +94,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! trace {
             ($($arg:tt)*) => {
-                print!("[{}] \x1B[2;3m[{}]\x1B[0m ", $crate::_time!(), "TRACE");
-                println!($($arg)*);
+                println!("[{}] \x1B[2;3m[{}]\x1B[0m {}", $crate::_time!(), "TRACE", format!($($arg)*));
             };
         }
     }else {
@@ -108,8 +110,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! info {
             ($($arg:tt)*) => {
-                print!("[{}] \x1B[32m[{}]\x1B[0m ", $crate::_time!(), "INFO ");
-                println!($($arg)*);
+                println!("[{}] \x1B[32m[{}]\x1B[0m {}", $crate::_time!(), "INFO ", format!($($arg)*));
             };
         }
     }else {
@@ -125,8 +126,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! warn {
             ($($arg:tt)*) => {
-                print!("[{}] \x1B[4;33m[{}]\x1B[0m ", $crate::_time!(), "WARN ");
-                println!($($arg)*);
+                println!("[{}] \x1B[4;33m[{}]\x1B[0m {}", $crate::_time!(), "WARN ", format!($($arg)*));
             };
         }
     }else {
@@ -142,8 +142,7 @@ cfg_if! {
         #[macro_export]
         macro_rules! error {
             ($($arg:tt)*) => {
-                eprint!("[{}] \x1B[1;31m[{}]\x1B[0m ", $crate::_time!(), "ERROR");
-                eprintln!($($arg)*);
+                eprintln!("[{}] \x1B[1;31m[{}]\x1B[0m {}", $crate::_time!(), "ERROR", format!($($arg)*));
             };
         }
     }else {
