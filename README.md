@@ -8,7 +8,7 @@
 
 > A simple terminal logger
 
-## Use
+## Usage
 
 Add this in your `Cargo.toml`:
 
@@ -31,30 +31,50 @@ fn main() {
 }
 ```
 
-## Features
-
-By default, these logs will not be displayed in `--release` mode, if you need to open please add the logs features.
-
-```
-[dependencies]
-logs = { version = "*", features = ["warn", "error" ...] }
-```
-
-```
-...
-[2020-07-06 15:56:08] [WARN ] This is a warn log
-[2020-07-06 15:56:08] [ERROR] This is a error log
-```
-
-Change datetime format
+## Config
 
 ```rust
-logs::date_format("%c");
-```
+use logs::{Config, debug, error};
+
+fn main() {
+    let mut config = Config::disable_all();
+
+    // Disable debug! output
+    config.debug(false);
+
+    // Allow error! output
+    config.error(true);
+
+    // The output of `trace!` is only displayed in debug mode
+    #[cfg(debug_assertions)]
+    config.trace(true);
+
+    // Change datetime format: [Fri Nov 27 15:56:08 2020]
+    config.date_format("%c").unwrap();
+        
+    config.init();
+
+    debug!("This is a debug log");
+    error!("This is a error log");
+}
 
 ```
-[Fri Nov 27 15:56:08 2020] [ERROR] This is a error log
+
+### env
+
+This can be configured by reading the `LOG` environment variable, which disables all output by default
+
+```bash
+# Enable all output
+# Disable debug output
+# ...
+export LOG='all,!debug,info,!error'
 ```
 
----
+```rust
+use logs::Config;
 
+fn main() {
+    Config::from_env().unwrap().init();
+}
+```
