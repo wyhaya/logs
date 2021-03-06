@@ -1,11 +1,21 @@
+use std::env::VarError;
+use std::str::FromStr;
+
 // Default date format: 0000-00-00 00:00:00
 #[doc(hidden)]
 pub static mut DATE_FORMAT: &str = "%F %T";
 #[doc(hidden)]
-pub static mut LOG_CONFIG: Config = Config::enable_all();
+pub static mut LOG_CONFIG: LogConfig = LogConfig::enable_all();
 
-#[derive(Debug, Clone, Copy)]
-pub struct Config {
+#[derive(Debug, Clone)]
+pub enum LogError {
+    NotPresent,
+    NotUnicode,
+    FormatError(String),
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct LogConfig {
     pub trace: bool,
     pub debug: bool,
     pub info: bool,
@@ -13,38 +23,12 @@ pub struct Config {
     pub error: bool,
 }
 
-impl Config {
-    pub const fn enable_all() -> Self {
-        Self {
-            trace: true,
-            debug: true,
-            info: true,
-            warn: true,
-            error: true,
-        }
-    }
-
-    pub const fn disable_all() -> Self {
-        Self {
-            trace: false,
-            debug: false,
-            info: false,
-            warn: false,
-            error: false,
-        }
-    }
-
-    pub fn from_env() -> Result<Self, String> {
-        match std::env::var("LOG") {
-            Ok(s) => Self::from_str(&s),
-            Err(_) => Err(format!("'LOG' environment variable not found")),
-        }
-    }
-
-    pub fn from_str(s: &str) -> Result<Self, String> {
+impl FromStr for LogConfig {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_lowercase();
         let mut config = Self::disable_all();
-        for item in s.split(",") {
+        for item in s.split(',') {
             match item.trim() {
                 "all" => {
                     config = Self::enable_all();
@@ -88,6 +72,41 @@ impl Config {
             }
         }
         Ok(config)
+    }
+}
+
+impl LogConfig {
+    pub const fn enable_all() -> Self {
+        Self {
+            trace: true,
+            debug: true,
+            info: true,
+            warn: true,
+            error: true,
+        }
+    }
+
+    pub const fn disable_all() -> Self {
+        Self {
+            trace: false,
+            debug: false,
+            info: false,
+            warn: false,
+            error: false,
+        }
+    }
+
+    pub fn from_env() -> Result<Self, LogError> {
+        match std::env::var("LOG") {
+            Ok(s) => match Self::from_str(&s) {
+                Ok(c) => Ok(c),
+                Err(msg) => Err(LogError::FormatError(msg)),
+            },
+            Err(err) => match err {
+                VarError::NotPresent => Err(LogError::NotPresent),
+                VarError::NotUnicode(_) => Err(LogError::NotUnicode),
+            },
+        }
     }
 
     pub fn trace(&mut self, enable: bool) -> &mut Self {

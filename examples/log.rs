@@ -1,7 +1,7 @@
-use logs::{debug, error, info, trace, warn, Config};
+use logs::{debug, error, info, trace, warn, LogConfig};
 
 fn main() {
-    Config::from_env().unwrap().init();
+    LogConfig::from_env().unwrap_or_default().init();
 
     trace!("This is a trace log");
     debug!("This is a debug log");

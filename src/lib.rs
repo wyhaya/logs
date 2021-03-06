@@ -3,41 +3,37 @@
 //! ```rust
 //! use logs::{debug, error, info, trace, warn};
 //!
-//! fn main() {
-//!     debug!("This is a debug log");
-//!     trace!("This is a trace log");
-//!     info!("This is a info log");
-//!     warn!("This is a warn log");
-//!     error!("This is a error log");
-//! }
+//! debug!("This is a debug log");
+//! trace!("This is a trace log");
+//! info!("This is a info log");
+//! warn!("This is a warn log");
+//! error!("This is a error log");
 //! ```
 //!
 //! ## Config
 //!
 //! ```
-//! use logs::{Config, debug, error};
+//! use logs::{LogConfig, debug, error};
 //!
-//! fn main() {
-//!     let mut config = Config::disable_all();
+//! let mut config = LogConfig::disable_all();
 //!
-//!     // Disable debug! output
-//!     config.debug(false);
+//! // Disable debug! output
+//! config.debug(false);
 //!
-//!     // Allow error! output
-//!     config.error(true);
+//! // Allow error! output
+//! config.error(true);
 //!
-//!     // The output of `trace!` is only displayed in debug mode
-//!     #[cfg(debug_assertions)]
-//!     config.trace(true);
+//! // The output of `trace!` is only displayed in debug mode
+//! #[cfg(debug_assertions)]
+//! config.trace(true);
 //!
-//!     // Change datetime format: [Fri Nov 27 15:56:08 2020]
-//!     config.date_format("%c").unwrap();
-//!         
-//!     config.init();
+//! // Change datetime format: [Fri Nov 27 15:56:08 2020]
+//! config.date_format("%c").unwrap();
+//!      
+//! config.init();
 //!
-//!     debug!("This is a debug log");
-//!     error!("This is a error log");
-//! }
+//! debug!("This is a debug log");
+//! error!("This is a error log");
 //!
 //! ```
 //!
@@ -53,15 +49,13 @@
 //! ```
 //!
 //! ```
-//! use logs::Config;
+//! use logs::LogConfig;
 //!
-//! fn main() {
-//!     Config::from_env().unwrap().init();
-//! }
+//! LogConfig::from_env().unwrap_or_default().init();
 //! ```
 
 mod config;
-pub use config::{Config, DATE_FORMAT, LOG_CONFIG};
+pub use config::{LogConfig, DATE_FORMAT, LOG_CONFIG};
 pub use time;
 
 #[doc(hidden)]
