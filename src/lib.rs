@@ -55,7 +55,7 @@
 //! ```
 
 mod config;
-pub use config::{LogConfig, DATE_FORMAT, LOG_CONFIG};
+pub use config::{LogConfig, LogError, DATE_FORMAT, LOG_CONFIG};
 pub use time;
 
 #[doc(hidden)]
