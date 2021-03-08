@@ -30,7 +30,7 @@
 //! // Change datetime format: [Fri Nov 27 15:56:08 2020]
 //! config.date_format("%c").unwrap();
 //!      
-//! config.init();
+//! config.build();
 //!
 //! debug!("This is a debug log");
 //! error!("This is a error log");
@@ -51,11 +51,12 @@
 //! ```
 //! use logs::LogConfig;
 //!
-//! LogConfig::from_env().unwrap_or_default().init();
+//! LogConfig::from_env().unwrap_or_default().build();
 //! ```
 
 mod config;
-pub use config::{LogConfig, LogError, DATE_FORMAT, LOG_CONFIG};
+pub use config::{LogConfig, LogError, _LOG_CONFIG};
+#[doc(hidden)]
 pub use time;
 
 #[doc(hidden)]
@@ -63,7 +64,7 @@ pub use time;
 macro_rules! _time {
     () => {
         $crate::time::now()
-            .strftime(unsafe { $crate::DATE_FORMAT })
+            .strftime(unsafe { $crate::_LOG_CONFIG.get_date_format() })
             .unwrap()
     };
 }
@@ -71,8 +72,12 @@ macro_rules! _time {
 #[macro_export]
 macro_rules! trace {
     ($($arg:tt)*) => {
-        if unsafe { $crate::LOG_CONFIG.trace } {
-            println!("[{}] \x1B[2;3m[{}]\x1B[0m {}", $crate::_time!(), "TRACE", format!($($arg)*));
+        if unsafe { $crate::_LOG_CONFIG.get_trace() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                println!("[{}] \x1B[2;3m[TRACE]\x1B[0m {}", $crate::_time!(), format!($($arg)*));
+            } else {
+                println!("[{}] [TRACE] {}", $crate::_time!(), format!($($arg)*));
+            }
         }
     };
 }
@@ -80,22 +85,38 @@ macro_rules! trace {
 #[macro_export]
 macro_rules! debug {
     () => {
-        if unsafe { $crate::LOG_CONFIG.debug } {
-            println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]", $crate::_time!(), "DEBUG", file!(), line!());
+        if unsafe { $crate::_LOG_CONFIG.get_debug() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                println!("[{}] \x1B[36m[DEBUG]\x1B[0m [{}:{}]", $crate::_time!(), file!(), line!());
+            } else {
+                println!("[{}] [DEBUG] [{}:{}]", $crate::_time!(), file!(), line!());
+            }
         }
     };
     ($val:expr) => {
-        if unsafe { $crate::LOG_CONFIG.debug } {
-            println!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]\n{:#?}", $crate::_time!(), "DEBUG", file!(), line!(), $val);
+        if unsafe { $crate::_LOG_CONFIG.get_debug() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                println!("[{}] \x1B[36m[DEBUG]\x1B[0m [{}:{}]\n{:#?}", $crate::_time!(), file!(), line!(), $val);
+            } else {
+                println!("[{}] [DEBUG] [{}:{}]\n{:#?}", $crate::_time!(), file!(), line!(), $val);
+            }
         }
     };
     ($($arg:expr), *) => {
-        if unsafe { $crate::LOG_CONFIG.debug } {
-            print!("[{}] \x1B[36m[{}]\x1B[0m [{}:{}]\n{}", $crate::_time!(), "DEBUG", file!(), line!(), {
-                let mut content = String::new();
-                $(content += &format!("{:#?}\n", $arg);)*
-                content
-            });
+        if unsafe { $crate::_LOG_CONFIG.get_debug() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                print!("[{}] \x1B[36m[DEBUG]\x1B[0m [{}:{}]\n{}", $crate::_time!(), file!(), line!(), {
+                    let mut content = String::new();
+                    $(content += &format!("{:#?}\n", $arg);)*
+                    content
+                });
+            } else {
+                print!("[{}] [DEBUG] [{}:{}]\n{}", $crate::_time!(), file!(), line!(), {
+                    let mut content = String::new();
+                    $(content += &format!("{:#?}\n", $arg);)*
+                    content
+                });
+            }
         }
     };
 }
@@ -103,8 +124,12 @@ macro_rules! debug {
 #[macro_export]
 macro_rules! info {
     ($($arg:tt)*) => {
-        if unsafe { $crate::LOG_CONFIG.info } {
-            println!("[{}] \x1B[32m[{}]\x1B[0m {}", $crate::_time!(), "INFO ", format!($($arg)*));
+        if unsafe { $crate::_LOG_CONFIG.get_info() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                println!("[{}] \x1B[32m[INFO ]\x1B[0m {}", $crate::_time!(), format!($($arg)*));
+            } else {
+                println!("[{}] [INFO ] {}", $crate::_time!(), format!($($arg)*));
+            }
         }
     };
 }
@@ -112,8 +137,12 @@ macro_rules! info {
 #[macro_export]
 macro_rules! warn {
     ($($arg:tt)*) => {
-        if unsafe { $crate::LOG_CONFIG.warn } {
-            println!("[{}] \x1B[4;33m[{}]\x1B[0m {}", $crate::_time!(), "WARN ", format!($($arg)*));
+        if unsafe { $crate::_LOG_CONFIG.get_warn() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                println!("[{}] \x1B[4;33m[WARN ]\x1B[0m {}", $crate::_time!(), format!($($arg)*));
+            } else {
+                println!("[{}] [WARN ] {}", $crate::_time!(), format!($($arg)*));
+            }
         }
     };
 }
@@ -121,8 +150,12 @@ macro_rules! warn {
 #[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {
-        if unsafe { $crate::LOG_CONFIG.error } {
-            eprintln!("[{}] \x1B[1;31m[{}]\x1B[0m {}", $crate::_time!(), "ERROR", format!($($arg)*));
+        if unsafe { $crate::_LOG_CONFIG.get_error() } {
+            if unsafe { $crate::_LOG_CONFIG.get_color() } {
+                eprintln!("[{}] \x1B[1;31m[ERROR]\x1B[0m {}", $crate::_time!(), format!($($arg)*));
+            } else {
+                eprintln!("[{}] [ERROR] {}", $crate::_time!(), format!($($arg)*));
+            }
         }
     };
 }

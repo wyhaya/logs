@@ -34,7 +34,7 @@ fn main() {
 ## Config
 
 ```rust
-use logs::{Config, debug, error};
+use logs::{LogConfig, debug, error};
 
 fn main() {
     let mut config = Config::disable_all();
@@ -52,7 +52,7 @@ fn main() {
     // Change datetime format: [Fri Nov 27 15:56:08 2020]
     config.date_format("%c").unwrap();
         
-    config.init();
+    config.build();
 
     debug!("This is a debug log");
     error!("This is a error log");
@@ -75,6 +75,6 @@ export LOG='all,!debug,info,!error'
 use logs::Config;
 
 fn main() {
-    Config::from_env().unwrap().init();
+    Config::from_env().unwrap().build();
 }
 ```
