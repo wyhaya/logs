@@ -195,7 +195,7 @@ impl LogConfig {
     ///
     /// format: [time docs](https://man7.org/linux/man-pages/man3/strftime.3.html)
     /// ```
-    /// logs::LogConfig::enable_all().date_format("%c").unwrap().build();
+    /// logs::LogConfig::enable_all().date_format("%c").unwrap().apply();
     /// // [Fri Nov 27 13:51:59 2020] [ERROR] This is a error log
     /// ```
     pub fn date_format<S: AsRef<str>>(&mut self, format: S) -> Result<&mut Self, time::ParseError> {
@@ -210,7 +210,7 @@ impl LogConfig {
     }
 
     /// Make the configuration effective
-    pub fn build(self) {
+    pub fn apply(self) {
         unsafe {
             _LOG_CONFIG = self;
         }

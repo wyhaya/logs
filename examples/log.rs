@@ -7,7 +7,7 @@ fn main() {
     warn!("This is a warn log");
     error!("This is a error log");
 
-    LogConfig::enable_all().color(true).build();
+    LogConfig::enable_all().color(true).apply();
 
     trace!("This is a trace log");
     debug!("This is a debug log");

@@ -31,6 +31,17 @@ fn main() {
 }
 ```
 
+Output:
+
+```
+[2021-05-20 10:18:20] [DEBUG] [examples/log.rs:5]
+"This is a debug log"
+[2021-05-20 10:18:20] [TRACE] This is a trace log
+[2021-05-20 10:18:20] [INFO ] This is a info log
+[2021-05-20 10:18:20] [WARN ] This is a warn log
+[2021-05-20 10:18:20] [ERROR] This is a error log
+```
+
 ## Config
 
 ```rust
@@ -49,10 +60,13 @@ fn main() {
     #[cfg(debug_assertions)]
     config.trace(true);
 
+    // Enable color display
+    config.color(true);
+
     // Change datetime format: [Fri Nov 27 15:56:08 2020]
     config.date_format("%c").unwrap();
         
-    config.build();
+    config.apply();
 
     debug!("This is a debug log");
     error!("This is a error log");
@@ -75,6 +89,6 @@ export LOG='all,!debug,info,!error'
 use logs::Config;
 
 fn main() {
-    Config::from_env().unwrap().build();
+    Config::from_env().unwrap().apply();
 }
 ```

@@ -27,10 +27,13 @@
 //! #[cfg(debug_assertions)]
 //! config.trace(true);
 //!
+//! // Enable color display
+//! config.color(true);
+//!
 //! // Change datetime format: [Fri Nov 27 15:56:08 2020]
 //! config.date_format("%c").unwrap();
 //!      
-//! config.build();
+//! config.apply();
 //!
 //! debug!("This is a debug log");
 //! error!("This is a error log");
@@ -51,7 +54,7 @@
 //! ```
 //! use logs::LogConfig;
 //!
-//! LogConfig::from_env().unwrap_or_default().build();
+//! LogConfig::from_env().unwrap_or_default().apply();
 //! ```
 
 mod config;
