@@ -1,0 +1,20 @@
+[package]
+name = "logs"
+version = "0.6.2"
+authors = ["wyhaya <wyhaya@gmail.com>"]
+edition = "2021"
+license = "MIT"
+description = "A simple terminal logger"
+readme = "README.md"
+homepage = "https://github.com/wyhaya/logs"
+repository = "https://github.com/wyhaya/logs.git"
+
+keywords = [
+    "log",
+    "terminal",
+    "logger"
+]
+
+[dependencies]
+log = { version = "0.4.17", features = ["std"] }
+time = { version = "0.3.14", features = ["formatting", "macros"] }
