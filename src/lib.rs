@@ -46,8 +46,9 @@ impl Logs {
     }
 
     /// Filter log target
-    pub fn target<S: ToString>(mut self, target: S) -> Self {
-        self.target = Some(target.to_string());
+    pub fn target<S: AsRef<str>>(mut self, target: S) -> Self {
+        let target = target.as_ref().replace('-', "_");
+        self.target = Some(target);
         self
     }
 
