@@ -1,3 +1,45 @@
+//! # Usage
+//! ```rust
+//! use logs::{debug, error, info, trace, warn, Logs};
+//!
+//! Logs::new().init();
+//! trace!("This is a trace log");
+//! debug!("This is a debug log");
+//! info!("This is a info log");
+//! warn!("This is a warn log");
+//! error!("This is a error log");
+//! ```
+//! Output:
+//! ```ignore
+//! 2022-09-06T08:38:23.490 [TRACE] This is a trace log
+//! 2022-09-06T08:38:23.490 [DEBUG] This is a debug log
+//! 2022-09-06T08:38:23.490 [INFO ] This is a info log
+//! 2022-09-06T08:38:23.490 [WARN ] This is a warn log
+//! 2022-09-06T08:38:23.490 [ERROR] This is a error log
+//! ```
+//! ## Options
+//! ```ignore
+//! use logs::{Logs, debug, error, LevelFilter};
+//! Logs::new()
+//!     // Show log level color
+//!     .color(true)
+//!     // Filter log target
+//!     .target("target")
+//!     // Filter log level
+//!     .level(LevelFilter::Info)
+//!     // Filter log target from `LOG` environment variable
+//!     .level_from_default_env()
+//!     .unwrap()
+//!     // Filter log target from `NAME` environment variable
+//!     .level_from_env("NAME")
+//!     .unwrap()
+//!     // Filter log level from str
+//!     .level_from_str("info")
+//!     .unwrap()
+//!     // Apply
+//!     .init();
+//! ```
+
 pub use log::{debug, error, info, trace, warn, LevelFilter};
 use log::{Level, Log, Metadata, ParseLevelError, Record};
 use std::{
@@ -10,6 +52,7 @@ const TIMESTAMP_FORMAT_OFFSET: &[FormatItem] = time::macros::format_description!
     "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond digits:3]"
 );
 
+/// Logger config
 #[derive(Debug, Clone)]
 pub struct Logs {
     level: LevelFilter,

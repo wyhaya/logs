@@ -20,7 +20,7 @@ logs = "*"
 ## Example
  
 ```rust
-use logs::{debug, error, info, trace, warn, Level, Logs};
+use logs::{debug, error, info, trace, warn, Logs};
 
 fn main() {
     Logs::new().init();
@@ -46,7 +46,7 @@ Output:
 ## Options
 
 ```rust
-use logs::{Logs, debug, error};
+use logs::{Logs, debug, error, LevelFilter};
 
 fn main() {
     Logs::new()
@@ -55,7 +55,7 @@ fn main() {
         // Filter log target
         .target("target")
         // Filter log level
-        .level(Level::Info)
+        .level(LevelFilter::Info)
         // Filter log target from `LOG` environment variable
         .level_from_default_env()
         .unwrap()
