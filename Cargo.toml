@@ -1,7 +1,6 @@
 [package]
 name = "logs"
-version = "0.6.3"
-authors = ["wyhaya <wyhaya@gmail.com>"]
+version = "0.7.0"
 edition = "2021"
 license = "MIT"
 description = "A simple terminal logger"
@@ -17,4 +16,4 @@ keywords = [
 
 [dependencies]
 log = { version = "0.4.17", features = ["std"] }
-time = { version = "0.3.14", features = ["formatting", "macros"] }
+time = { version = "0.3.17", features = ["formatting", "macros"] }

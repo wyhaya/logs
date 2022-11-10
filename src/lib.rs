@@ -1,5 +1,5 @@
-pub use log::{debug, error, info, trace, warn, Level};
-use log::{LevelFilter, Log, Metadata, ParseLevelError, Record};
+pub use log::{debug, error, info, trace, warn, LevelFilter};
+use log::{Level, Log, Metadata, ParseLevelError, Record};
 use std::{
     env::{self, VarError},
     str::FromStr,
@@ -12,7 +12,7 @@ const TIMESTAMP_FORMAT_OFFSET: &[FormatItem] = time::macros::format_description!
 
 #[derive(Debug, Clone)]
 pub struct Logs {
-    level: Level,
+    level: LevelFilter,
     color: bool,
     target: Option<String>,
 }
@@ -33,7 +33,7 @@ impl Logs {
     /// Create a new logs
     pub fn new() -> Self {
         Self {
-            level: Level::Trace,
+            level: LevelFilter::Trace,
             color: false,
             target: None,
         }
@@ -53,7 +53,7 @@ impl Logs {
     }
 
     /// Filter log level
-    pub fn level(mut self, level: Level) -> Self {
+    pub fn level(mut self, level: LevelFilter) -> Self {
         self.level = level;
         self
     }
@@ -73,7 +73,7 @@ impl Logs {
 
     /// Filter log level from `str`
     pub fn level_from_str<S: AsRef<str>>(mut self, s: S) -> Result<Self, LogsError> {
-        match Level::from_str(s.as_ref()) {
+        match LevelFilter::from_str(s.as_ref()) {
             Ok(level) => {
                 self.level = level;
                 Ok(self)
@@ -94,11 +94,13 @@ impl Logs {
 
 impl Log for Logs {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        if self.level >= metadata.level() {
-            return match &self.target {
-                Some(t) => t == metadata.target(),
-                None => true,
-            };
+        if let Some(level) = self.level.to_level() {
+            if level >= metadata.level() {
+                return match &self.target {
+                    Some(t) => metadata.target().starts_with(t),
+                    None => true,
+                };
+            }
         }
         false
     }
