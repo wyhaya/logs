@@ -56,10 +56,10 @@ fn main() {
         .target("target")
         // Filter log level
         .level(LevelFilter::Info)
-        // Filter log target from `LOG` environment variable
+        // Filter log level from `LOG` environment variable
         .level_from_default_env()
         .unwrap()
-        // Filter log target from `NAME` environment variable
+        // Filter log level from `NAME` environment variable
         .level_from_env("NAME")
         .unwrap()
         // Filter log level from str
